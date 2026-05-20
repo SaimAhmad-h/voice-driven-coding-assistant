@@ -1,0 +1,7 @@
+numpy
+sounddevice
+faster-whisper
+pyautogui
+langgraph
+langgraph-checkpoint
+langgraph-checkpoint-sqlite
