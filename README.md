@@ -1,453 +1,250 @@
-# 🎙️ **Voice-Driven Coding Assistant**
+# 🎙️ Voice-Driven Coding Assistant
 
-## 🚀 **Introduction**
+A Python-based AI tool that lets you control file operations using natural voice commands. Instead of typing, you speak — the assistant listens, understands your intent using Google Gemini AI, and performs the file operation automatically.
 
-The **Voice-Driven Coding Assistant** is an **AI-powered automation system** that enables users to interact with their computer using **natural voice commands** instead of traditional keyboard and mouse input.
-
-This project combines:
-
-- 🎤 **Speech Recognition**
-- 🧠 **Google Gemini AI**
-- ⚙️ **Python Automation**
-- 📂 **System Command Execution**
-
-to create an intelligent assistant capable of understanding human language and transforming it into real coding and file-management actions.
-
-Instead of memorizing rigid commands, users can simply speak naturally.
-
-### 💬 **Example Command**
-
-> **"Create a Python file named `app.py` and write a hello world program."**
-
-The system understands the request, generates the required code, and performs the action automatically.
+No rigid command syntax. No memorizing shortcuts. Just speak naturally.
 
 ---
 
-# ✨ **Key Highlights**
+## 🚀 How It Works
 
-✅ **AI-powered natural language understanding**  
-✅ **Hands-free coding workflow**  
-✅ **Voice-to-code automation**  
-✅ **Real file creation and editing**  
-✅ **Intelligent command interpretation using Gemini AI**  
-✅ **Extensible architecture for future AI agent systems**  
-✅ **Beginner-friendly and highly scalable design**
+The system is a simple, linear pipeline with four stages:
 
----
-
-# 🎯 **Project Objective**
-
-The main goal of this project is to build an intelligent **voice-controlled development assistant** that simplifies interaction between humans and computers.
-
-Traditional automation systems rely on strict command syntax. This project removes that limitation by allowing **conversational interaction through AI**.
-
-The assistant can:
-
-- 📌 **Understand flexible human instructions**
-- 📌 **Generate and write code automatically**
-- 📌 **Create and manage files**
-- 📌 **Execute development-related tasks**
-- 📌 **Reduce dependency on manual typing**
-
-This creates a more natural and productive coding environment.
-
----
-
-# 🧠 **How the System Works**
-
-```text
-🎤 Voice Input
+```
+🎤 Microphone Input
       ↓
-📝 Speech-to-Text Conversion
+📝 Whisper Speech-to-Text (local, runs on CPU)
       ↓
-🧠 Gemini AI Processing
+🧠 Google Gemini AI (interprets intent, generates JSON command)
       ↓
-⚙️ Command Generation
-      ↓
-📂 System Execution
+⚙️ File Operation Executed on your system
 ```
 
----
+### Stage 1 — Voice Capture
+The microphone is opened using `sounddevice` and audio is streamed continuously in real time. You do not need to press any button to start or stop — the system listens as long as it is running.
 
-# ⚙️ **Workflow Explanation**
+### Stage 2 — Speech to Text
+The captured audio is passed to **Whisper** (`faster-whisper`, small model, CPU mode) which converts your speech into text. Whisper's VAD (Voice Activity Detection) filter is enabled, which helps ignore silence and background noise.
 
-## 1️⃣ **Voice Input**
-
-The user speaks naturally through the microphone.
-
-### 💬 **Example**
-
-```text
-"Create a file named hello.py and write a hello world program."
-```
-
-The system captures the audio in real time.
-
----
-
-## 2️⃣ **Speech-to-Text Conversion**
-
-The captured audio is converted into text using speech recognition technologies.
-
-### 💬 **Example Output**
-
-```text
-Create a file named hello.py and write a hello world program
-```
-
----
-
-## 3️⃣ **AI Processing with Gemini**
-
-**Google Gemini AI** acts as the intelligence layer of the system.
-
-### 🧠 **Gemini Responsibilities**
-
-- **Understands user intent**
-- **Identifies actions**
-- **Extracts filenames and coding requirements**
-- **Converts instructions into structured commands**
-
-### 💬 **Example AI Output**
+### Stage 3 — AI Command Parsing
+The transcribed text is sent to **Google Gemini 2.5 Flash** with a structured prompt that instructs it to respond only with a JSON object. Gemini identifies the action you want (create, edit, delete, etc.), the filename, and the content — and returns it in this format:
 
 ```json
 {
   "action": "create_file",
   "filename": "hello.py",
-  "content": "print('Hello World')"
+  "content": "print('Hello World')",
+  "new_name": ""
 }
 ```
 
----
+If Gemini's response contains anything other than JSON, the system extracts the JSON block using regex and safely ignores the rest.
 
-## 4️⃣ **Command Execution Engine**
-
-The generated command is processed by the execution engine.
-
-### ⚙️ **The engine performs tasks such as:**
-
-- 📁 **Creating files**
-- ✏️ **Writing code**
-- 🗑️ **Deleting files**
-- 📝 **Editing existing files**
-
-This enables direct interaction with the operating system.
+### Stage 4 — Execution
+The parsed JSON command is passed to the execution engine which performs the actual file operation on your system using Python's built-in `os` and `subprocess` modules.
 
 ---
 
-# 🧩 **System Components**
+## ✅ Supported Commands
 
-## 🎤 **1. Voice Recognition Module**
+The assistant supports **6 file operations**. You can trigger them using natural language — you don't need to say the exact action name.
 
-### 📌 **Responsible for:**
-
-- **Capturing microphone input**
-- **Audio processing**
-- **Speech-to-text conversion**
-
-This module acts as the communication bridge between the user and the AI system.
-
----
-
-## 🧠 **2. Gemini AI Processing Module**
-
-The core intelligence of the project.
-
-### 📌 **Responsibilities**
-
-- **Natural language understanding**
-- **Intent extraction**
-- **Command structuring**
-- **AI-based code generation**
-
-This removes the need for predefined command syntax.
+| Action | What It Does | Voice Example |
+|---|---|---|
+| `create_file` | Creates a new file and writes content into it | *"Create a Python file named app.py with a hello world program"* |
+| `edit_file` | Overwrites an existing file with new content | *"Edit app.py and change the message to goodbye world"* |
+| `append_file` | Adds content to the end of an existing file | *"Append a for loop from 1 to 10 to app.py"* |
+| `delete_file` | Deletes a file from the system | *"Delete old_script.py"* |
+| `rename_file` | Renames a file | *"Rename app.py to main.py"* |
+| `run_script` | Runs a Python file and prints its output | *"Run main.py"* |
 
 ---
 
-## ⚙️ **3. Command Execution Engine**
+## 🧩 Project Structure
 
-Handles real system operations such as:
+```
+voice_enabled_cursor/
+├── main.py               # Entry point — starts the listening loop
+├── voice_input_llm.py    # Microphone capture + Whisper transcription + pipeline trigger
+├── command_processor.py  # Builds Gemini prompt, parses JSON response
+├── executor.py           # Executes the file operation based on parsed command
+├── langgraph_setup.py    # Gemini AI client initialization
+├── config.py             # Model names, device settings, API key
+└── requirements.txt      # Python dependencies
+```
 
-- 📁 **File creation**
-- ✏️ **Code writing**
-- 📝 **File editing**
-- 🗑️ **File deletion**
+### File Responsibilities
 
-The module can later be expanded into full desktop automation.
+**`main.py`**
+The entry point. Calls `start_continuous_listening()` and nothing else. Kept intentionally minimal.
+
+**`voice_input_llm.py`**
+Handles the entire audio pipeline — opens the microphone stream via `sounddevice`, collects audio chunks in a callback, concatenates them into a numpy array, and passes to Whisper for transcription. On successful transcription, it calls the command processor and then the executor.
+
+**`command_processor.py`**
+Takes the transcribed text and builds a structured prompt for Gemini. Sends it via the Gemini client and uses regex (`re.search`) to extract the JSON block from the response. Parses it with `json.loads` and returns the command dict.
+
+**`executor.py`**
+Receives the command dict and performs the appropriate file operation. Checks file existence before editing, appending, deleting, or renaming. Wraps everything in try/except to handle errors gracefully without crashing the main loop.
+
+**`langgraph_setup.py`**
+Initializes the Google Gemini client using `google-genai` and exposes the `generate_text()` function used by the command processor.
+
+**`config.py`**
+Central configuration — Whisper model size (`small`), compute device (`cpu`), Gemini model (`gemini-2.5-flash`), and the API key placeholder.
 
 ---
 
-## 📂 **4. File System Interaction Layer**
+## 🛠️ Technologies Used
 
-Responsible for interacting with the operating system safely and dynamically.
-
-### 📌 **Supports**
-
-- **Creating project files**
-- **Updating code files**
-- **Managing directories**
-- **Dynamic content writing**
+| Technology | Role |
+|---|---|
+| **Python** | Core language |
+| **faster-whisper** | Local speech-to-text using OpenAI's Whisper (small model, CPU) |
+| **sounddevice** | Real-time microphone audio capture |
+| **numpy** | Audio array processing |
+| **Google Gemini 2.5 Flash** | Natural language understanding and code generation |
+| **google-genai** | Official Python client for Gemini API |
+| **os / subprocess** | File system operations and script execution |
 
 ---
 
-# 🔥 **Features**
+## ⚙️ Setup & Installation
 
-## ✅ **Natural Language Understanding**
+### Requirements
+- Python 3.10 or higher
+- A working microphone
+- A free Google Gemini API key
 
-Users can speak naturally without learning fixed commands.
+---
 
-### 💬 **Example**
+### Step 1 — Clone the repository
 
-```text
-"Make a Python file and add a loop."
+```bash
+git clone https://github.com/SaimAhmad-h/voice-driven-coding-assistant
+cd "voice-driven coding assistant/voice_enabled_cursor"
 ```
 
 ---
 
-## ✅ **AI-Based Code Generation**
+### Step 2 — Install dependencies
 
-The assistant can generate basic code automatically using Gemini AI.
-
----
-
-## ✅ **Voice-Controlled Workflow**
-
-Hands-free interaction improves productivity and accessibility.
-
----
-
-## ✅ **File Management Automation**
-
-### 📌 **Supports**
-
-- 📁 **File creation**
-- 📝 **File editing**
-- 🗑️ **File deletion**
-
----
-
-## ✅ **Extensible Architecture**
-
-The project is designed for future expansion into:
-
-- 🤖 **Full AI agents**
-- 🖥️ **OS automation**
-- 🧠 **Smart assistants**
-- 👨‍💻 **Development copilots**
-
----
-
-# 💡 **Example Usage**
-
-## 🧪 **Example 1**
-
-### 🎤 **User Input**
-
-```text
-Create a file named app.py and write a hello world program
+```bash
+pip install -r requirements.txt
+pip install google-genai
 ```
 
-### ⚙️ **System Action**
+> **Note:** `google-genai` is required but not listed in `requirements.txt`. Install it separately as shown above.
+
+---
+
+### Step 3 — Add your Gemini API key
+
+Open `config.py` and replace the empty string with your key:
 
 ```python
-print("Hello World")
+GEMINI_API_KEY = "your_api_key_here"
+```
+
+Get a free API key at: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+
+The free tier supports `gemini-2.5-flash` which is the model this project uses.
+
+---
+
+### Step 4 — Run the assistant
+
+```bash
+python main.py
+```
+
+The assistant will print:
+```
+🎙️ Listening continuously... Speak naturally!
+```
+
+Speak your command into the microphone. The assistant will print what it recognized and what action it performed. Press `Ctrl+C` to stop.
+
+---
+
+## 💬 Example Session
+
+```
+🎙️ Listening continuously... Speak naturally!
+✅ Recognized: Create a Python file named hello.py and print hello world
+✅ File created: hello.py
+
+✅ Recognized: Append a for loop from 1 to 5 to hello.py
+✅ Content appended to file: hello.py
+
+✅ Recognized: Run hello.py
+🖥️ Script output:
+Hello World
+1
+2
+3
+4
+5
+
+✅ Recognized: Delete hello.py
+✅ File deleted: hello.py
+
+🛑 Stopped listening.
 ```
 
 ---
 
-## 🧪 **Example 2**
+## 📌 Known Limitations
 
-### 🎤 **User Input**
+### No Conversation Memory
+Each voice command is processed independently. The assistant has no knowledge of previous commands in the same session. For example, saying *"edit the file I just created"* will not work — you must always specify the filename explicitly.
 
-```text
-Create a Python loop from 1 to 10
-```
+### Speech Recognition Accuracy
+Whisper may mishear file names, especially ones that sound like common words or have underscores. For example:
+- `my_app` might be heard as `my app`
+- `reg_toba` might be heard as `regtoba`
 
-### ⚙️ **Generated Code**
+Using short, clear, distinct file names reduces these errors.
 
-```python
-for i in range(1, 11):
-    print(i)
-```
+### English Language Only
+Whisper is configured with `language="en"`. Other languages are not supported in the current configuration.
 
----
+### File Operations Only
+The assistant can only create, edit, append, delete, rename, and run Python files. It cannot control the mouse, keyboard, open applications, or interact with the desktop in any way.
 
-# 🛠️ **Technologies Used**
+### Overwrites on Edit
+The `edit_file` action completely overwrites the file. There is no diffing, merging, or partial editing — the entire file content is replaced with what Gemini generates.
 
-- 🐍 **Python**
-- 🧠 **Google Gemini AI**
-- 🎤 **Speech Recognition**
-- 🎙️ **PyAudio**
-- 📂 **OS / File Handling**
-- 📄 **JSON Command Structures**
+### Script Execution Safety
+When using `run_script`, the filename comes from Gemini's response. Always verify what file is being run. Avoid using this on files you did not create through this session.
 
 ---
 
-# 📌 **Current Limitations**
+## 🔮 Future Enhancements
 
-Although the system performs well for basic coding automation, there are still some limitations.
+These features are not yet implemented but are planned for future development:
 
-## ❌ **Current Challenges**
-
-### 🔹 **Ambiguity in File Names**
-
-Speech recognition may sometimes misunderstand similar-sounding file names.
-
-### 💬 **Example**
-
-```text
-reg_toba
-```
-
-may be interpreted as:
-
-```text
-regtoba
-```
-
-This can lead to incorrect file creation or execution.
+- **Session memory** — remember previous commands and filenames within a session so you can say *"edit the last file"*
+- **LangGraph agent** — multi-step task execution where one voice command triggers a sequence of actions
+- **Desktop automation** — mouse and keyboard control using `pyautogui`
+- **Application control** — open VS Code, browser, or terminal via voice
+- **Smart debugging** — detect errors in generated code and automatically fix them
+- **Wake word detection** — only listen when a specific trigger word is spoken
 
 ---
 
-### 🔹 **Limited Desktop Automation**
+## 🤝 Contributions Welcome
 
-Currently, the assistant mainly focuses on coding and file operations.
+This project is open for contributions. Some useful areas:
 
-### ❌ **Not Yet Supported**
-
-- 🖱️ **Mouse cursor control**
-- ⌨️ **Full keyboard automation**
-- 🖥️ **Advanced desktop interaction**
-- 📱 **Cross-application workflow automation**
-
-Additional libraries such as **pyautogui** can later be integrated for complete system control.
+- **Silence detection** — improve audio processing so commands are only sent after the user finishes speaking
+- **Better prompts** — improve Gemini prompt engineering for more accurate command parsing
+- **Path validation** — add safety checks before executing or deleting files
+- **`.env` support** — move API key out of `config.py` into a `.env` file
+- **Error recovery** — handle cases where Gemini returns unexpected output more gracefully
 
 ---
 
-# 🔮 **Future Enhancements**
+## 📄 License
 
-The project has strong potential for future AI-agent development.
-
-## 🚀 **Planned Improvements**
-
-### 🖱️ **Voice-Based Cursor Control**
-
-Control the mouse using voice commands.
-
----
-
-### 🤖 **AI Agent Architecture**
-
-Integration with frameworks such as:
-
-- **LangGraph**
-- **Multi-agent systems**
-- **Autonomous workflows**
-
----
-
-### 🧠 **Context Memory**
-
-Allow the assistant to remember previous conversations and commands.
-
-### 💬 **Example**
-
-```text
-"Continue the previous program."
-```
-
----
-
-### 🖥️ **Application Automation**
-
-Control applications using voice:
-
-- **Open VS Code**
-- **Launch browser**
-- **Manage folders**
-- **Execute terminal commands**
-
----
-
-### 🧪 **Smart Debugging Assistant**
-
-AI-assisted debugging and automatic error fixing.
-
----
-
-# 🌍 **Real-World Applications**
-
-## 👨‍💻 **Developers**
-
-Hands-free coding assistance and automation.
-
----
-
-## ♿ **Accessibility Technology**
-
-Helpful for users with physical disabilities or typing limitations.
-
----
-
-## ⚡ **Productivity Automation**
-
-Automate repetitive development tasks.
-
----
-
-## 🔬 **AI Research**
-
-Useful for experimentation in:
-
-- **Human-computer interaction**
-- **AI agents**
-- **Natural language automation**
-- **Voice-based operating systems**
-
----
-
-# 📈 **Why This Project Is Important**
-
-This project demonstrates the future direction of **AI-human interaction**.
-
-It combines:
-
-- 🧠 **Artificial Intelligence**
-- 🎤 **Voice Interfaces**
-- ⚙️ **Automation**
-- 📚 **NLP**
-- 💻 **System Programming**
-
-into a unified intelligent assistant capable of understanding and executing real-world tasks.
-
-The project is not just a simple automation script — it is a foundational step toward fully autonomous AI-powered development environments.
-
----
-
-# 🚀 **Future Vision**
-
-The long-term vision of this project is to evolve into a fully autonomous AI development assistant capable of:
-
-- ✅ **Understanding conversational commands**
-- ✅ **Writing production-level code**
-- ✅ **Managing development workflows**
-- ✅ **Controlling the operating system**
-- ✅ **Assisting developers intelligently in real time**
-
----
-
-# 🤝 **Contribution**
-
-Contributions, improvements, and feature suggestions are welcome.
-
-## 📌 **Possible Contribution Areas**
-
-- **Voice processing improvements**
-- **Better AI prompts**
-- **Automation modules**
-- **UI integration**
-- **Debugging systems**
-- **Security enhancements**
-
----
-.
+This project is open source. Feel free to use, modify, and build on it.
