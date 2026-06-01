@@ -1,7 +1,7 @@
 # command_processor.py
 import json
 import re
-from langgraph_setup import generate_text, graph
+from langgraph_setup import generate_text
 
 def parse_command(text: str):
     """
@@ -28,13 +28,6 @@ Respond ONLY with JSON, nothing else.
             return None
 
         cmd = json.loads(json_match.group(0))
-
-        # --- Update LangGraph session state ---
-        graph["session_1"] = {
-            "current_file": cmd.get("filename", ""),
-            "last_command": cmd.get("action", ""),
-            "file_history": {cmd.get("filename", ""): cmd.get("content", "")}
-        }
 
         return cmd
 
