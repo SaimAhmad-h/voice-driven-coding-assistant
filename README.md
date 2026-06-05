@@ -27,7 +27,7 @@ The microphone is opened using `sounddevice` and audio is streamed continuously 
 The captured audio is passed to **Whisper** (`faster-whisper`, small model, CPU mode) which converts your speech into text. Whisper's VAD (Voice Activity Detection) filter is enabled, which helps ignore silence and background noise.
 
 ### Stage 3 — AI Command Parsing
-The transcribed text is sent to **Google Gemini 2.5 Flash** with a structured prompt that instructs it to respond only with a JSON object. Gemini identifies the action you want (create, edit, delete, etc.), the filename, and the content — and returns it in this format:
+The transcribed text is sent to **Google Gemini 1.5 Flash** with a structured prompt that instructs it to respond only with a JSON object. Gemini identifies the action you want (create, edit, delete, etc.), the filename, and the content — and returns it in this format:
 
 ```json
 {
@@ -91,7 +91,7 @@ Receives the command dict and performs the appropriate file operation. Checks fi
 Initializes the Google Gemini client using `google-genai` and exposes the `generate_text()` function used by the command processor.
 
 **`config.py`**
-Central configuration — Whisper model size (`small`), compute device (`cpu`), Gemini model (`gemini-2.5-flash`), and the API key placeholder.
+Central configuration — Whisper model size (`small`), compute device (`cpu`), Gemini model (`gemini-1.5-flash`), and the API key placeholder.
 
 ---
 
@@ -103,7 +103,7 @@ Central configuration — Whisper model size (`small`), compute device (`cpu`), 
 | **faster-whisper** | Local speech-to-text using OpenAI's Whisper (small model, CPU) |
 | **sounddevice** | Real-time microphone audio capture |
 | **numpy** | Audio array processing |
-| **Google Gemini 2.5 Flash** | Natural language understanding and code generation |
+| **Google Gemini 1.5 Flash** | Natural language understanding and code generation |
 | **google-genai** | Official Python client for Gemini API |
 | **os / subprocess** | File system operations and script execution |
 
@@ -148,7 +148,7 @@ GEMINI_API_KEY = "your_api_key_here"
 
 Get a free API key at: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 
-The free tier supports `gemini-2.5-flash` which is the model this project uses.
+The free tier supports `gemini-1.5-flash` which is the model this project uses.
 
 ---
 
